@@ -3,13 +3,13 @@
 import argparse
 import pdb
 import logging as lg
+import re
 
 import analysis.csv as c_an
 import analysis.xml as x_an
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--extension", help="""Type of file to analyse. Is it a CSV or an XML?""")
     parser.add_argument("-d","--datafile",help="""CSV file containing pieces of information about the members of parliament""")
     parser.add_argument("-v", "--verbose", action='store_true', help="""Make the application talk!""")
     parser.add_argument("-bp", "--byparty", action='store_true', help="""Display a graph for each political party""")
@@ -27,13 +27,16 @@ def main():
         searchname = args.searchname
         byparty = args.byparty
         groupfirst = int(args.groupfirst)
+        e = re.search(r'^.+\.(\D{3})$', args.datafile)
+        extension = e.group(1)
+
         if datafile == None:
             raise Warning('You must indicate a datafile!')
         else:
             try:
-                if args.extension == 'xml':
+                if extension == 'xml':
                     x_an.launch_analysis(datafile)
-                elif args.extension == 'csv':
+                elif extension == 'csv':
                     c_an.launch_analysis("Assemblée Nationale Française", datafile, searchname, groupfirst, byparty)
             except FileNotFoundError as e:
                 print("Ow :( The file was not found. Here is the original message of the exception :", e)
