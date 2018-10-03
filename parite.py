@@ -27,7 +27,7 @@ def main():
                 if args.extension == 'xml':
                     x_an.launch_analysis(datafile)
                 elif args.extension == 'csv':
-                    c_an.launch_analysis(datafile)
+                    c_an.launch_analysis("Assemblée Nationale Française", datafile, True)
             except FileNotFoundError as e:
                 print("Ow :( The file was not found. Here is the original message of the exception :", e)
             finally:
