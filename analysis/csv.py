@@ -11,6 +11,54 @@ class SetOfParliamentMembers:
 		self.name = name
 		self.dataframe = pd.DataFrame()
 		
+	def __len__(self):
+		"""Donner le nombre de membre"""
+		return len(self.dataframe.index)
+		
+	def __contains__(self, name):
+		"""Permet de dire si le nom est contenu dans la liste"""
+		if self.dataframe.nom.str.contains(name, case=False, regex=False).any():
+			return True
+		else:
+			return False
+	
+	def __getitem__(self, name):
+		"""Extraire les membres selon leur nom"""
+		try:
+			if name in self:
+				return (self.dataframe[self.dataframe.nom.str.contains(name, case=False, regex=False)])
+			else:
+				raise Warning("No member with such a name !")
+		
+		except Warning as e:
+			print(e)
+			
+	def __lt__(self, data_b):
+		"""Comparer le nombre de membres de deux groupes parlementaires"""
+		if len(self) < len(data_b):
+			return True
+		else:
+			return False
+	
+	def __gt__(self, data_b):
+		"""Comparer le nombre de membres de deux groupes parlementaires"""
+		if len(self) > len(data_b):
+			return True
+		else:
+			return False
+	
+	# def __radd__(self):
+		# pass
+		
+	# def __add__(self):
+		# pass
+		
+	# def __getattr__(self):
+		# pass
+	
+	# def __setattr__(self):
+		# pass
+	
 	def data_from_csv(self, path_csv):
 		"""Ajouter des députés à partir d'un fichier csv"""
 		self.dataframe = pd.read_csv(path_csv, sep=";")
@@ -30,7 +78,6 @@ class SetOfParliamentMembers:
 		fig, ax = plt.subplots()
 		ax.axis("equal")
 		labels = ["Male ({})".format(counts[0]), "Female ({})".format(counts[1])]
-		print(counts)
 		ax.pie(percents, labels = labels, autopct = "%1.1f percents")
 		plt.title("{} ({} members)".format(self.name, counts.sum()))
 		plt.show()
@@ -50,7 +97,7 @@ class SetOfParliamentMembers:
 		return result
 
 
-def launch_analysis(name_parliament, data_file, by_party = False):
+def launch_analysis(name_parliament, data_file, searchname = '', groupfirst = 0, by_party = False):
 	directory = os.path.dirname(os.path.dirname(__file__)) # we get the right path.
 	path_to_file = os.path.join(directory, "data", data_file) # with this path, we go inside the folder `data` and get the file.
 
@@ -63,6 +110,20 @@ def launch_analysis(name_parliament, data_file, by_party = False):
 			political_party = parliament_members.split_by_political_party()
 			for party, subset in political_party.items():
 				subset.display_chart()
+				
+		if searchname != None:
+			print(parliament_members[searchname])
+			
+		if groupfirst > 0:
+			political_party = parliament_members.split_by_political_party()
+			group_members = {}
+			for party, subset in political_party.items():
+				group_members[party] = len(subset)
+			sorted_group_members = sorted(group_members.items(), key=lambda x: x[1], reverse = True)
+			rang = 1
+			for key, value in sorted_group_members[0:groupfirst]:
+				print ('{} - {} : {} members.'.format(rang, key, value))
+				rang += 1
 				
 	except FileNotFoundError as e:
 		print("Ow :( The file was not found. Here is the original message of the exception :", e)
